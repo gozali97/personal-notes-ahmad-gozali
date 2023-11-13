@@ -3,23 +3,27 @@ import Input from './Input';
 import Button from './button';
 import Card from './card';
 import Textarea from './Textarea';
+import dayjs from 'dayjs';
+import 'dayjs/locale/id';
+dayjs.locale('id');
+import { getInitialData } from '../utils';
 
 export default function Note() {
     const [newNote, setNewNote] = useState('');
     const [bodyNote, setBodyNote] = useState('');
-    const [notes, setNotes] = useState([]);
+    const initialNotes = getInitialData();
+    const [notes, setNotes] = useState(initialNotes);
 
     function handleAddNote(e) {
         e.preventDefault();
-        setNotes((prevNote) => [
-            ...prevNote,
-            {
-                id: Math.floor(Math.random() * Date.now()),
-                name: newNote,
-                body: bodyNote,
-                archived: false,
-            },
-        ]);
+        const newNoteItem = {
+            id: Math.floor(Math.random() * Date.now()),
+            title: newNote,
+            body: bodyNote,
+            createdAt: new Date().toISOString(),
+            archived: false,
+        };
+        setNotes((prevNotes) => [...prevNotes, newNoteItem]);
         setNewNote('');
         setBodyNote('');
     }
@@ -60,7 +64,7 @@ export default function Note() {
 
     const filteredNotes = notes.filter((note) => {
         const lowerCaseSearchTerm = searchTerm.toLowerCase();
-        const lowerCaseNoteName = note.name.toLowerCase();
+        const lowerCaseNoteName = note.title.toLowerCase();
         const lowerCaseNoteBody = note.body.toLowerCase();
 
         return (
@@ -100,7 +104,7 @@ export default function Note() {
                         <input
                             type='search'
                             id='search'
-                            name='search'
+                            title='search'
                             value={searchTerm}
                             onChange={handleSearch}
                             className='block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500'
@@ -141,8 +145,13 @@ export default function Note() {
                                     .filter((note) => !note.archived)
                                     .map((note) => (
                                         <Card key={note.id}>
-                                            <Card.Title>{note.name}</Card.Title>
-                                            <Card.Body>{note.body}</Card.Body>
+                                            <Card.Title>
+                                                {note.title}
+                                            </Card.Title>
+                                            <Card.Body>
+                                                <p className='text-gray-800 mb-2'>{note.body}</p>
+                                                <p className='text-xs text-gray-500'>{dayjs(note.createdAt).format('dddd, D MMM YYYY')}</p>
+                                            </Card.Body>
                                             <Card.Footer>
                                                 <button
                                                     onClick={() => handleArchiveNote(note.id)}
@@ -168,8 +177,11 @@ export default function Note() {
                                     .filter((note) => note.archived)
                                     .map((note) => (
                                         <Card key={note.id}>
-                                            <Card.Title>{note.name}</Card.Title>
-                                            <Card.Body>{note.body}</Card.Body>
+                                            <Card.Title>{note.title}</Card.Title>
+                                            <Card.Body>
+                                                <p className='text-gray-800 mb-2'>{note.body}</p>
+                                                <p className='text-xs text-gray-500'>{dayjs(note.createdAt).format('dddd, D MMM YYYY')}</p>
+                                            </Card.Body>
                                             <Card.Footer>
                                                 <button
                                                     onClick={() => handleMoveNote(note.id)}
